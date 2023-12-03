@@ -1,0 +1,17 @@
+#spring.sql.init.mode=always
+
+server:
+  port: 9000
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    hibernate.ddl-auto: create-drop
+  kafka:
+    producer:
+#      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#      transaction-id-prefix: tx-
