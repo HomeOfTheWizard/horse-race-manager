@@ -28,8 +28,8 @@ public class RaceController {
     }
 
     @Operation(summary = "Create a race with the list of horses provided. " +
-            "If you want to signup an already registered horse, provide its id. If you do so, all non-coherent information on the horse apart ID will be ignored. " +
-            "Horses' race numbers will be reorganised if not correctly ordered.")
+            "If you want to signup an already registered horse, provide its id. If you do so, all changes on the horse's information will be ignored. It will be signed-up with information already registered" +
+            "If you did not correctly ordered the horses', their race numbers will be reorganised automatically.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Race created",
                     content = { @Content(mediaType = "application/json",
