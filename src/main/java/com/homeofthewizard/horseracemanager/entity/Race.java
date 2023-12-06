@@ -29,10 +29,10 @@ public class Race implements Serializable {
     private Long id;
 
     @Column
-    private LocalDate date;
+    private String name;
 
     @Column
-    private String name;
+    private LocalDate date;
 
     @Column
     private Integer number;

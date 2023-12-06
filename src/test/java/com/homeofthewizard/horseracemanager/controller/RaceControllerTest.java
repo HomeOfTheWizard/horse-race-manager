@@ -1,9 +1,9 @@
 package com.homeofthewizard.horseracemanager.controller;
 
+import com.homeofthewizard.horseracemanager.dto.CreateRaceDto;
+import com.homeofthewizard.horseracemanager.dto.RaceHorseDto;
 import com.homeofthewizard.horseracemanager.entity.Horse;
 import com.homeofthewizard.horseracemanager.entity.Race;
-import com.homeofthewizard.horseracemanager.entity.RaceHorse;
-import com.homeofthewizard.horseracemanager.entity.RaceHorseKey;
 import com.homeofthewizard.horseracemanager.repository.HorseRepository;
 import com.homeofthewizard.horseracemanager.repository.RaceRepository;
 import io.restassured.RestAssured;
@@ -71,10 +71,10 @@ class RaceControllerTest {
     }
 
     @Test
-    void shouldGetAllCustomers() {
+    void shouldGetAllRaces() {
         List<Race> races = List.of(
-                new Race(null, LocalDate.now(), "noobs", 1, List.of()),
-                new Race(null, LocalDate.now(), "legends", 2, List.of())
+                new Race(null, "noobs", LocalDate.now(), 1, List.of()),
+                new Race(null, "legends", LocalDate.now(), 2, List.of())
         );
         raceRepository.saveAll(races);
 
@@ -89,17 +89,11 @@ class RaceControllerTest {
 
     @Test
     void shouldPostARace() {
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
-        var horse1 = new Horse(null, "shadowrun", Set.of());
-        var horse2 = new Horse(null, "billy", Set.of());
-        var horse3 = new Horse(null, "whiteFang", Set.of());
-        var raceHorse1 = new RaceHorse(new RaceHorseKey(null,null), horse1, race, 2 );
-        var raceHorse2 = new RaceHorse(new RaceHorseKey(null,null), horse2, race, 4 );
-        var raceHorse3 = new RaceHorse(new RaceHorseKey(null,null), horse3, race, 1 );
-        race.setHorses(List.of(raceHorse1, raceHorse2, raceHorse3));
-        horse1.setRaces(Set.of(raceHorse1));
-        horse2.setRaces(Set.of(raceHorse2));
-        horse3.setRaces(Set.of(raceHorse3));
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
+                new RaceHorseDto(null, null,"lucky"),
+                new RaceHorseDto(null, null,"billy"),
+                new RaceHorseDto(null, null,"shadowrun")
+        ));
 
         given()
                 .contentType(ContentType.JSON)
@@ -111,8 +105,24 @@ class RaceControllerTest {
     }
 
     @Test
+    void shouldReturn4XX_PostARace_WithLessThan3Horses() {
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
+                new RaceHorseDto(null, null,"lucky"),
+                new RaceHorseDto(null, null,"shadowrun")
+        ));
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(race)
+                .when()
+                .post("/api/race")
+                .then()
+                .statusCode(409);
+    }
+
+    @Test
     void shouldSignUpHorseToARace() {
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
+        var race = new Race(null, "legends", LocalDate.now(), 1, List.of());
         raceRepository.save(race);
         var horse = new Horse(null, "shadowrun", Set.of());
         horseRepository.save(horse);

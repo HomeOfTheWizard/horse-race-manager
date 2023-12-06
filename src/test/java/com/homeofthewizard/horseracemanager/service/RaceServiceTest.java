@@ -1,14 +1,15 @@
 package com.homeofthewizard.horseracemanager.service;
 
+import com.homeofthewizard.horseracemanager.dto.CreateRaceDto;
+import com.homeofthewizard.horseracemanager.dto.RaceHorseDto;
 import com.homeofthewizard.horseracemanager.entity.Horse;
 import com.homeofthewizard.horseracemanager.entity.Race;
-import com.homeofthewizard.horseracemanager.entity.RaceHorse;
-import com.homeofthewizard.horseracemanager.entity.RaceHorseKey;
-import com.homeofthewizard.horseracemanager.repository.RaceRepository;
 import com.homeofthewizard.horseracemanager.repository.HorseRepository;
+import com.homeofthewizard.horseracemanager.repository.RaceRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest()
 public class RaceServiceTest {
@@ -65,28 +65,22 @@ public class RaceServiceTest {
     }
 
     @Test
-    public void shouldStoreARaceWithMoreThan2Horses(){
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
-        var horse1 = new Horse(null, "shadowrun", Set.of());
-        var horse2 = new Horse(null, "billy", Set.of());
-        var horse3 = new Horse(null, "whiteFang", Set.of());
-        var raceHorse1 = new RaceHorse(new RaceHorseKey(null,null), horse1, race, null );
-        var raceHorse2 = new RaceHorse(new RaceHorseKey(null,null), horse2, race, null );
-        var raceHorse3 = new RaceHorse(new RaceHorseKey(null,null), horse3, race, null );
-        race.setHorses(List.of(raceHorse1, raceHorse2, raceHorse3));
-        horse1.setRaces(Set.of(raceHorse1));
-        horse2.setRaces(Set.of(raceHorse2));
-        horse3.setRaces(Set.of(raceHorse3));
+    public void shouldStore_ARace_WithMoreThan2Horses(){
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
+                new RaceHorseDto(null, null, "lucky"),
+                new RaceHorseDto(null, null, "billy"),
+                new RaceHorseDto(null, null, "shadowrun")
+        ));
 
         raceService.save(race);
 
         var racesStored = raceRepository.findAll();
-        assertTrue(racesStored.size() == 1);
+        assertEquals(1, racesStored.size());
     }
 
     @Test
-    public void shouldNotStoreARaceWithLessThan3Horses(){
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
+    public void shouldNotStore_ARace_WithLessThan3Horses(){
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(new RaceHorseDto(null, null, "lucky")));
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
@@ -98,34 +92,68 @@ public class RaceServiceTest {
     }
 
     @Test
-    @Transactional
-    public void shouldStoreARaceWithUnorderedHorsesReorganised(){
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
-        var horse1 = new Horse(null, "shadowrun", Set.of());
-        var horse2 = new Horse(null, "billy", Set.of());
-        var horse3 = new Horse(null, "whiteFang", Set.of());
-        var raceHorse1 = new RaceHorse(new RaceHorseKey(null,null), horse1, race, 2 );
-        var raceHorse2 = new RaceHorse(new RaceHorseKey(null,null), horse2, race, 4 );
-        var raceHorse3 = new RaceHorse(new RaceHorseKey(null,null), horse3, race, 1 );
-        race.setHorses(List.of(raceHorse1, raceHorse2, raceHorse3));
-        horse1.setRaces(Set.of(raceHorse1));
-        horse2.setRaces(Set.of(raceHorse2));
-        horse3.setRaces(Set.of(raceHorse3));
+    public void shouldNotStore_ARace_WithAlreadyExistingSameDateAndName(){
+        var race = new Race(null, "legends", LocalDate.now(), 1, List.of());
+        raceRepository.save(race);
 
-        raceService.save(race);
+        var race2 = new CreateRaceDto( "legends", LocalDate.now(), 2, List.of(
+                new RaceHorseDto(null, null, "lucky"),
+                new RaceHorseDto(null, null, "billy"),
+                new RaceHorseDto(null, null, "shadowrun")
+        ));
 
-        var racesStored = raceRepository.findAll();
-        assertTrue(racesStored.size() == 1);
-        assertTrue(racesStored.get(0).getHorses().get(0).getNoHorse().equals(1));
-        assertTrue(racesStored.get(0).getHorses().get(1).getNoHorse().equals(2));
-        assertTrue(racesStored.get(0).getHorses().get(2).getNoHorse().equals(3));
+        DataIntegrityViolationException thrown = assertThrows(
+                DataIntegrityViolationException.class,
+                () -> raceService.save(race2),
+                "Expected save to throw DataIntegrityViolationException, but it did not."
+        );
+
+        assertTrue(thrown.getMessage().contains("uniquedateandname"));
+    }
+
+    @Test
+    public void shouldNotStore_ARace_WithAlreadyExistingSameDateAndNumber(){
+        var race = new Race(null, "legends", LocalDate.now(), 1, List.of());
+        raceRepository.save(race);
+
+        var race2 = new CreateRaceDto( "masters", LocalDate.now(), 1, List.of(
+                new RaceHorseDto(null, null, "lucky"),
+                new RaceHorseDto(null, null, "billy"),
+                new RaceHorseDto(null, null, "shadowrun")
+        ));
+
+        DataIntegrityViolationException thrown = assertThrows(
+                DataIntegrityViolationException.class,
+                () -> raceService.save(race2),
+                "Expected save to throw DataIntegrityViolationException, but it did not."
+        );
+
+        assertTrue(thrown.getMessage().contains("uniquedateandnumber"));
     }
 
     @Test
     @Transactional
-    public void shouldSignUpHorseToARace(){
+    public void shouldStore_ARace_WithUnorderedHorses_Reorganised(){
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
+                new RaceHorseDto(null, null, "lucky"),
+                new RaceHorseDto(null, null, "billy"),
+                new RaceHorseDto(null, null, "shadowrun")
+        ));
+
+        raceService.save(race);
+
+        var racesStored = raceRepository.findAll();
+        assertEquals(1, racesStored.size());
+        assertEquals(1, (int) racesStored.get(0).getHorses().get(0).getNoHorse());
+        assertEquals(2, (int) racesStored.get(0).getHorses().get(1).getNoHorse());
+        assertEquals(3, (int) racesStored.get(0).getHorses().get(2).getNoHorse());
+    }
+
+    @Test
+    @Transactional
+    public void shouldSignUp_Horse_To_ARace(){
         raceRepository.deleteAll();
-        var race = new Race(null, LocalDate.now(), "legends", 1, List.of());
+        var race = new Race(null, "legends", LocalDate.now(), 1, List.of());
         raceRepository.save(race);
         var horse = new Horse(null, "shadowrun", Set.of());
         horseRepository.save(horse);

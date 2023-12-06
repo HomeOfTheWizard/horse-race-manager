@@ -1,15 +1,18 @@
 package com.homeofthewizard.horseracemanager.service;
 
+import com.homeofthewizard.horseracemanager.dto.HorseDto;
 import com.homeofthewizard.horseracemanager.entity.Horse;
+import com.homeofthewizard.horseracemanager.entity.Race;
+import com.homeofthewizard.horseracemanager.entity.RaceHorse;
 import com.homeofthewizard.horseracemanager.repository.HorseRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -19,21 +22,31 @@ public class HorseService {
     private static final String HORSE_TOPIC = "horse-topic";
 
     private HorseRepository repository;
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private KafkaProducer kafkaProducer;
 
-    public List<Horse> findAll(){
-        return repository.findAll();
+    public List<HorseDto> findAll(){
+        return repository.findAll().stream().map(this::horseToDTO).toList();
+    }
+
+    private HorseDto horseToDTO(Horse horse) {
+        return new HorseDto(
+                horse.getId(),
+                horse.getName(),
+                horse.getRaces().stream().map(RaceHorse::getRace).map(Race::getId).toList());
     }
 
     @Transactional
-    public void save(Horse horse) {
-        repository.save(horse);
-        try{
-            var result = kafkaTemplate.send(HORSE_TOPIC, horse).get();
-            log.info("race stored in DB and sent to Kafka: " + result.getRecordMetadata());
-        }catch (InterruptedException | ExecutionException ex ){
-            log.error("could not send race to kafka topic", ex);
-            throw new RuntimeException(ex);
-        }
+    public HorseDto save(HorseDto horse) {
+        var horseDbo = getHorse(horse);
+        repository.save(horseDbo);
+        kafkaProducer.sendToKafkaTopic(horse, HORSE_TOPIC);
+        return horseToDTO(horseDbo);
+    }
+
+    private Horse getHorse(HorseDto horseDto) {
+        if(Objects.isNull(horseDto.id()))
+            return new Horse(null, horseDto.name(), Set.of());
+        else
+            return repository.findById(horseDto.id()).orElse(new Horse(null, horseDto.name(), Set.of()));
     }
 }
