@@ -70,6 +70,7 @@ class RaceControllerTest {
     void setUp() {
         RestAssured.baseURI = "http://localhost:" + port;
         raceRepository.deleteAll();
+        horseRepository.deleteAll();
     }
 
     @Test

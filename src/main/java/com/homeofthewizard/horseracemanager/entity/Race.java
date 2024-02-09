@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 
-import static jakarta.persistence.CascadeType.PERSIST;
+import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(
@@ -43,7 +43,7 @@ public class Race implements Serializable {
     @NotNull
     private Integer number;
 
-    @OneToMany(mappedBy = "race", fetch = FetchType.LAZY, cascade = PERSIST)
+    @OneToMany(mappedBy = "race", fetch = FetchType.LAZY, cascade = ALL)
     @OrderColumn(name="noHorse")
     private List<RaceHorse> horses;
 }
