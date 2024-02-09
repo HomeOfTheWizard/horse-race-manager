@@ -1,7 +1,7 @@
 package com.homeofthewizard.horseracemanager.controller;
 
 import com.homeofthewizard.horseracemanager.dto.CreateRaceDto;
-import com.homeofthewizard.horseracemanager.dto.RaceHorseDto;
+import com.homeofthewizard.horseracemanager.dto.CreateRaceHorseDto;
 import com.homeofthewizard.horseracemanager.entity.Horse;
 import com.homeofthewizard.horseracemanager.entity.Race;
 import com.homeofthewizard.horseracemanager.repository.HorseRepository;
@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -29,6 +30,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.hasSize;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestPropertySource(properties = "spring.config.location=classpath:/application-test.yaml")
 class RaceControllerTest {
 
     @LocalServerPort
@@ -90,9 +92,9 @@ class RaceControllerTest {
     @Test
     void shouldPostARace() {
         var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
-                new RaceHorseDto(null, null,"lucky"),
-                new RaceHorseDto(null, null,"billy"),
-                new RaceHorseDto(null, null,"shadowrun")
+                new CreateRaceHorseDto(null,"lucky"),
+                new CreateRaceHorseDto(null,"billy"),
+                new CreateRaceHorseDto(null,"shadowrun")
         ));
 
         given()
@@ -107,8 +109,8 @@ class RaceControllerTest {
     @Test
     void shouldReturn4XX_PostARace_WithLessThan3Horses() {
         var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
-                new RaceHorseDto(null, null,"lucky"),
-                new RaceHorseDto(null, null,"shadowrun")
+                new CreateRaceHorseDto(null,"lucky"),
+                new CreateRaceHorseDto(null,"shadowrun")
         ));
 
         given()

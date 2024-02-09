@@ -2,11 +2,9 @@ package com.homeofthewizard.horseracemanager.controller;
 
 import com.homeofthewizard.horseracemanager.dto.HorseDto;
 import com.homeofthewizard.horseracemanager.service.HorseService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +22,7 @@ public class HorseController {
     }
 
     @PostMapping("/horses")
-    public List<HorseDto> create(List<HorseDto> horses) {
+    public List<HorseDto> create(@RequestBody @Valid List<HorseDto> horses) {
         var persistedHorses = new ArrayList<HorseDto>();
         for (var horse: horses) {
             persistedHorses.add(service.save(horse));
@@ -33,7 +31,7 @@ public class HorseController {
     }
 
     @PostMapping("/horse")
-    public HorseDto create(HorseDto horse) {
+    public HorseDto create(@RequestBody @Valid HorseDto horse) {
         return service.save(horse);
     }
 }

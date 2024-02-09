@@ -1,6 +1,7 @@
 package com.homeofthewizard.horseracemanager.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
+
+import static jakarta.persistence.CascadeType.PERSIST;
 
 @Entity
 @Table(
@@ -29,15 +32,18 @@ public class Race implements Serializable {
     private Long id;
 
     @Column
+    @NotNull
     private String name;
 
     @Column
+    @NotNull
     private LocalDate date;
 
     @Column
+    @NotNull
     private Integer number;
 
-    @OneToMany(mappedBy = "race", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "race", fetch = FetchType.LAZY, cascade = PERSIST)
     @OrderColumn(name="noHorse")
     private List<RaceHorse> horses;
 }

@@ -1,7 +1,7 @@
 package com.homeofthewizard.horseracemanager.service;
 
 import com.homeofthewizard.horseracemanager.dto.CreateRaceDto;
-import com.homeofthewizard.horseracemanager.dto.RaceHorseDto;
+import com.homeofthewizard.horseracemanager.dto.CreateRaceHorseDto;
 import com.homeofthewizard.horseracemanager.entity.Horse;
 import com.homeofthewizard.horseracemanager.entity.Race;
 import com.homeofthewizard.horseracemanager.repository.HorseRepository;
@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -24,6 +25,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest()
+@TestPropertySource(properties = "spring.config.location=classpath:/application-test.yaml")
 public class RaceServiceTest {
 
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
@@ -67,9 +69,9 @@ public class RaceServiceTest {
     @Test
     public void shouldStore_ARace_WithMoreThan2Horses(){
         var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
-                new RaceHorseDto(null, null, "lucky"),
-                new RaceHorseDto(null, null, "billy"),
-                new RaceHorseDto(null, null, "shadowrun")
+                new CreateRaceHorseDto(null, "lucky"),
+                new CreateRaceHorseDto(null, "billy"),
+                new CreateRaceHorseDto(null, "shadowrun")
         ));
 
         raceService.save(race);
@@ -80,7 +82,7 @@ public class RaceServiceTest {
 
     @Test
     public void shouldNotStore_ARace_WithLessThan3Horses(){
-        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(new RaceHorseDto(null, null, "lucky")));
+        var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(new CreateRaceHorseDto(null, "lucky")));
 
         RuntimeException thrown = assertThrows(
                 RuntimeException.class,
@@ -97,9 +99,9 @@ public class RaceServiceTest {
         raceRepository.save(race);
 
         var race2 = new CreateRaceDto( "legends", LocalDate.now(), 2, List.of(
-                new RaceHorseDto(null, null, "lucky"),
-                new RaceHorseDto(null, null, "billy"),
-                new RaceHorseDto(null, null, "shadowrun")
+                new CreateRaceHorseDto(null, "lucky"),
+                new CreateRaceHorseDto(null, "billy"),
+                new CreateRaceHorseDto(null, "shadowrun")
         ));
 
         DataIntegrityViolationException thrown = assertThrows(
@@ -117,9 +119,9 @@ public class RaceServiceTest {
         raceRepository.save(race);
 
         var race2 = new CreateRaceDto( "masters", LocalDate.now(), 1, List.of(
-                new RaceHorseDto(null, null, "lucky"),
-                new RaceHorseDto(null, null, "billy"),
-                new RaceHorseDto(null, null, "shadowrun")
+                new CreateRaceHorseDto(null, "lucky"),
+                new CreateRaceHorseDto(null, "billy"),
+                new CreateRaceHorseDto(null, "shadowrun")
         ));
 
         DataIntegrityViolationException thrown = assertThrows(
@@ -135,9 +137,9 @@ public class RaceServiceTest {
     @Transactional
     public void shouldStore_ARace_WithUnorderedHorses_Reorganised(){
         var race = new CreateRaceDto( "legends", LocalDate.now(), 1, List.of(
-                new RaceHorseDto(null, null, "lucky"),
-                new RaceHorseDto(null, null, "billy"),
-                new RaceHorseDto(null, null, "shadowrun")
+                new CreateRaceHorseDto(null, "lucky"),
+                new CreateRaceHorseDto(null, "billy"),
+                new CreateRaceHorseDto(null, "shadowrun")
         ));
 
         raceService.save(race);

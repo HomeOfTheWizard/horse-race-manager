@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,9 +28,9 @@ public class RaceController {
         return service.findAll();
     }
 
-    @Operation(summary = "Create a race with the list of horses provided. " +
-            "If you want to signup an already registered horse, provide its id. If you do so, all changes on the horse's information will be ignored. It will be signed-up with information already registered" +
-            "If you did not correctly ordered the horses', their race numbers will be reorganised automatically.")
+    @Operation(summary = "Create a race, with optional the list of horses to sign up. " +
+            "If you want to signup an already registered horse, provide its id. If you do so, all changes on the horse's information will be ignored. It will be signed-up with information already registered. " +
+            "The horses' race numbers will be assigned in the given order, starting with 1.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Race created",
                     content = { @Content(mediaType = "application/json",
@@ -39,7 +40,7 @@ public class RaceController {
             @ApiResponse(responseCode = "5XX", description = "Race cannot be created. Something went wrong on the server",
                     content = @Content)})
     @PostMapping("/race")
-    public RaceDto create(@RequestBody CreateRaceDto race) {
+    public RaceDto create(@RequestBody @Valid CreateRaceDto race) {
         return service.save(race);
     }
 
@@ -53,12 +54,12 @@ public class RaceController {
             @ApiResponse(responseCode = "5XX", description = "Race cannot be updated. Something went wrong on the server",
                     content = @Content)})
     @PutMapping("/race")
-    public RaceDto update(@RequestBody RaceInformationDto race) {
+    public RaceDto update(@RequestBody @Valid RaceInformationDto race) {
         return service.update(race);
     }
 
     @PostMapping("/races")
-    public List<RaceDto> create(List<CreateRaceDto> races) {
+    public List<RaceDto> create(@RequestBody @Valid List<CreateRaceDto> races) {
         var persistedRaces = new ArrayList<RaceDto>();
         for (var race: races) {
             service.save(race);

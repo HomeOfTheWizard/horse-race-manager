@@ -2,6 +2,7 @@ package com.homeofthewizard.horseracemanager.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class Horse {
     private Long id;
 
     @Column
+    @NotNull
     private String name;
 
     @OneToMany(mappedBy = "horse", fetch = FetchType.LAZY, cascade = CascadeType.ALL)

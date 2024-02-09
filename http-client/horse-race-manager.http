@@ -1,0 +1,31 @@
+### Create a horse
+POST http://localhost:9000/api/horse
+Content-Type: application/json
+
+{
+  "id": null,
+  "name": "shadowfang",
+  "raceIds": []
+}
+
+### Create a race
+POST http://localhost:9000/api/race
+Content-Type: application/json
+
+{
+  "name": "legends",
+  "date": "2024-01-30",
+  "number": 1,
+  "horses": [
+    {
+      "name": "billy"
+    },
+    {
+      "name": "lucky"
+    },
+    {
+      "name": "shadowrun"
+    }
+  ]
+}
+

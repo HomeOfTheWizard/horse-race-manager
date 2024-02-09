@@ -1,9 +1,6 @@
 package com.homeofthewizard.horseracemanager.service;
 
-import com.homeofthewizard.horseracemanager.dto.CreateRaceDto;
-import com.homeofthewizard.horseracemanager.dto.RaceDto;
-import com.homeofthewizard.horseracemanager.dto.RaceHorseDto;
-import com.homeofthewizard.horseracemanager.dto.RaceInformationDto;
+import com.homeofthewizard.horseracemanager.dto.*;
 import com.homeofthewizard.horseracemanager.entity.Horse;
 import com.homeofthewizard.horseracemanager.entity.Race;
 import com.homeofthewizard.horseracemanager.entity.RaceHorse;
@@ -102,22 +99,22 @@ public class RaceService {
     }
 
     private Race validateRace(CreateRaceDto race) {
-        var raceHorseDto = race.horses();
-        if(raceHorseDto.size() < 3) throw new IllegalArgumentException("A race cannot include less than 3 horses");
+        var raceHorseDTOs = race.horses();
+        if(raceHorseDTOs.size() < 3) throw new IllegalArgumentException("A race cannot include less than 3 horses");
 
-        var raceDbo = new Race(null, race.name(), race.date(), race.number(), List.of());
+        var raceDBO = new Race(null, race.name(), race.date(), race.number(), List.of());
 
-        var raceHorseDbos = new ArrayList<RaceHorse>();
-        for (int i = 0; i< raceHorseDto.size(); i++) {
-            var horseDbo = findHorse(raceHorseDto.get(i));
-            raceHorseDbos.add(new RaceHorse(new RaceHorseKey(null,null), horseDbo, raceDbo, i+1));
+        var raceHorseDBOs = new ArrayList<RaceHorse>();
+        for (int i = 0; i< raceHorseDTOs.size(); i++) {
+            var horseDBO = findHorse(raceHorseDTOs.get(i));
+            raceHorseDBOs.add(new RaceHorse(new RaceHorseKey(null,null), horseDBO, raceDBO, i+1));
         }
 
-        raceDbo.setHorses(raceHorseDbos);
-        return raceDbo;
+        raceDBO.setHorses(raceHorseDBOs);
+        return raceDBO;
     }
 
-    private Horse findHorse(RaceHorseDto horseDto) {
+    private Horse findHorse(CreateRaceHorseDto horseDto) {
         if(Objects.isNull(horseDto.id()))
             return new Horse(null, horseDto.name(), Set.of());
         else
